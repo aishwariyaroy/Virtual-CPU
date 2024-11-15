@@ -59,15 +59,20 @@ string convertToMachineCode(const string &line) {
 }
 
 int main() {
-    vector<string> assemblyCode;
-    string line;
+    vector<string> assemblyCode = {
+        "ADD R1, R2, R3",
+        "LOAD R1, 0x0A",
+        "STORE R1, 0x0B",
+        "JMP 0x0C",
+        "CMP R2, R3",
+        "NOT R1",
+        "MOV R1, R2",
+        "NOP"
+    };
 
-    cout << "Enter assembly code line by line (type END to finish):" << endl;
-
-    // Read assembly code lines
-    while (getline(cin, line)) {
-        if (line == "END") break;
-        assemblyCode.push_back(line);
+    cout << "Sample Assembly Code:\n";
+    for (const string &line : assemblyCode) {
+        cout << line << endl;
     }
 
     cout << "\nMachine Code Output:\n";
