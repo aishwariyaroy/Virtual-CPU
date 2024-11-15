@@ -1,8 +1,20 @@
-0001 01 10 11    ; ADD R1, R2, R3    -> Add R2 and R3, store in R1
-0011 01 00001010  ; LOAD R1, 0x0A    -> Load value from memory address 0x0A to R1
-0100 01 00001011  ; STORE R1, 0x0B   -> Store value of R1 into memory address 0x0B
-0101 00001100     ; JMP 0x0C         -> Jump to memory address 0x0C
-0110 10 11        ; CMP R2, R3       -> Compare R2 and R3
-1001 01           ; NOT R1           -> Perform NOT operation on R1
-1010 01 10        ; MOV R1, R2       -> Copy value of R2 to R1
-1011              ; NOP              -> No operation
+ADD R1, R2, R3
+LOAD R1, 0x0A
+STORE R1, 0x0B
+JMP 0x0C
+CMP R2, R3
+NOT R1
+MOV R1, R2
+NOP
+
+Machine Code Output:
+000111
+001100001010
+010000001011
+010100001100
+011011
+100101
+101010
+1011
+
+
