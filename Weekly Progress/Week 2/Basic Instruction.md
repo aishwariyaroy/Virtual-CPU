@@ -76,4 +76,21 @@ Each instruction includes:
 
 ### 11. **NOP** - No Operation
    - **Format**: `NOP`
-   - **Purpose**: Does nothing; used to insert pauses or timi
+   - **Purpose**: Does nothing; used to insert pauses or timing adjustments.
+   - **Opcode**: `1011`
+   - **Encoding Example**: `NOP` → `1011`
+
+---
+
+## Register and Address Representation
+
+- **Registers**: Assigned 2-bit binary values:
+  - `R1` → `01`
+  - `R2` → `10`
+  - `R3` → `11`
+
+- **Memory Addresses**: Represented as 8-bit binary values (e.g., `0x0A` → `00001010`).
+
+---
+
+This structured format enables efficient encoding of instructions for the virtual CPU, facilitating various operations.
