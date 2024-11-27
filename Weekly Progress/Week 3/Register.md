@@ -1,32 +1,32 @@
-```markdown
 # **Register Documentation**
 
 ## **Overview**
-Registers are essential components of the Virtual CPU, providing fast, temporary storage for operands, results, and intermediate values during execution.
+Registers are key components of the Virtual CPU, enabling fast, temporary data storage for operations and results.
 
 ---
 
 ## **Details**
-1. **General-Purpose Registers**  
-   - **R0, R1, R2, R3**: Four registers for storing integer values.
-   - **Width**: Each register stores one integer.  
-   - **Initialization**: All registers start at `0`.
-
-2. **Functions**  
-   - **Arithmetic**: Used in instructions like `ADD` and `SUB`.
-   - **Logical**: Supports operations like `NOT`.  
-   - **Efficiency**: Faster access than main memory.
+### General-Purpose Registers
+- **R0, R1, R2, R3**: Used for storing integers.  
+- **Initial Value**: All registers are initialized to `0`.  
+- **Width**: Each register holds one integer.
 
 ---
 
-## **Example**
-- **Before Execution**: `R0=0, R1=0, R2=1, R3=2`
-- **Instruction**: `ADD R0, R2, R3`  
-- **After Execution**: `R0=3, R1=0, R2=1, R3=2`
+## **Usage**
+- **Arithmetic Operations**: `ADD`, `SUB`, etc.  
+- **Logical Operations**: `NOT`, etc.  
+- **Example**:  
+  - **Before**: `R0=0, R1=0, R2=1, R3=2`  
+  - **Instruction**: `ADD R0, R2, R3`  
+  - **After**: `R0=3, R1=0, R2=1, R3=2`
 
 ---
 
 ## **Benefits**
-- **Speed**: Quicker than memory access.  
-- **Flexibility**: General-purpose use.  
-- **Efficiency**: Reduces memory dependency.
+- **Speed**: Faster than accessing main memory.  
+- **Efficiency**: Reduces memory dependency.  
+- **Flexibility**: Supports a variety of operations.
+
+Registers are critical for the efficient functioning of the Virtual CPU.
+```
