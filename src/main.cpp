@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <string>
+#include <sstream>
 #include "Register.h"
 #include "ALU.h"
 #include "Control_Unit.h"
@@ -16,7 +16,6 @@ int main() {
     // Example program with instructions
     vector<string> program = {
         "ADD 0 1 2",  // R0 = R1 + R2
-        "SUB 1 2 3",  // R1 = R2 - R3
         "NOT 0",      // R0 = ~R0
         "NOP"         // No operation
     };
@@ -41,10 +40,6 @@ int main() {
         if (operation == "ADD") {
             ss >> r1 >> r2 >> r3;
             int result = alu.add(registers.get(r2), registers.get(r3));
-            registers.set(r1, result);
-        } else if (operation == "SUB") {
-            ss >> r1 >> r2 >> r3;
-            int result = alu.sub(registers.get(r2), registers.get(r3));
             registers.set(r1, result);
         } else if (operation == "NOT") {
             ss >> r1;
