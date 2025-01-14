@@ -9,19 +9,21 @@ private:
     std::vector<int> registers;
 
 public:
-    Register(int size) : registers(size, 0) {}
-
-    void set(int index, int value) {
-        if (index >= 0 && index < registers.size()) {
-            registers[index] = value;
-        }
+    Register(int size) {
+        registers.resize(size, 0);
     }
 
     int get(int index) const {
         if (index >= 0 && index < registers.size()) {
             return registers[index];
         }
-        return 0; // Default value for invalid index
+        return 0;
+    }
+
+    void set(int index, int value) {
+        if (index >= 0 && index < registers.size()) {
+            registers[index] = value;
+        }
     }
 
     void print() const {
