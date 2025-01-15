@@ -1,4 +1,4 @@
-# Memory Implementation Documentation  
+# Memory Implementation Documentation
 
 ## Overview  
 Memory segmentation divides memory into logical sections, or **segments**, to organize and manage memory efficiently. Each segment serves a specific purpose, such as storing data, code, or stack operations. This approach ensures a cleaner and more structured virtual memory space.  
