@@ -120,6 +120,7 @@ Memory Content (Hexadecimal):
 [1]=a 
 Display: Result: 10
 PC: 1, ZF: 0
+
 Enter input: ADD(R1+R2)
 Invalid instruction format: ADD(R1+R2)
 R0=00001010 R1=00000101 R2=00000101 R3=00000000 
@@ -127,18 +128,21 @@ Memory Content (Hexadecimal):
 [1]=a [2]=a 
 Display: Result: 10
 PC: 2, ZF: 0
+
 Enter input: R1*R2
 R0=00011001 R1=00000101 R2=00000101 R3=00000000 
 Memory Content (Hexadecimal):
 [1]=a [2]=a [3]=19 
 Display: Result: 25
 PC: 3, ZF: 0
+
 Enter input: CALL(2)
 R0=00011001 R1=00000010 R2=00000101 R3=00000000 
 Memory Content (Hexadecimal):
 [1]=a [2]=a [3]=19 
 Display: Result: 25
 PC: 3, ZF: 0
+
 Enter input: 6-6
 R0=00000000 R1=00000110 R2=00000110 R3=00000000 
 Memory Content (Hexadecimal):
