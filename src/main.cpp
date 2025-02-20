@@ -1,192 +1,269 @@
 #include <iostream>
-#include <string>
-#include "ALU.h"
-#include "ControlUnit.h"
-#include "Registers.h"
-#include "Memory.h"
-#include "InstructionDecoder.h"
+#include <sstream>
+#include <vector>
+#include <iomanip>
+#include <bitset>
+#include <regex>
+#include <stack>
 
-// Week 3 Logic: Basic Fetch-Execute Cycle
-void runWeek3Logic(Memory& memory, ALU& alu, Register& reg) {
-    int programCounter = 0;
-    int cycleCount = 0;
+using namespace std;
 
-    std::cout << "\nRunning Week 3 Logic...\n";
+// ALU Class
+class ALU {
+public:
+    string execute(const string & operation, int op1, int op2) {
+        int result = 0;
 
-    while (programCounter < 2) {  // Simpler example with only 2 instructions
-        // Fetch phase
-        int instruction = memory.fetchInstruction(programCounter);
-        std::cout << "Cycle " << cycleCount++ << " - Fetch: Instruction at PC " << programCounter << " = " << instruction << std::endl;
+        if (operation == "ADD") {
+            result = op1 + op2;
+        } else if (operation == "SUB") {
+            result = op1 - op2;
+        } else if (operation == "MUL") {
+            result = op1 * op2;
+        } else if (operation == "DIV") {
+            if (op2 == 0) {
+                cerr << "Division by zero error.\n";
+                return "00000000";
+            }
+            result = op1 / op2;  // Ensure integer division
+        } else if (operation == "AND") {
+            result = op1 & op2;
+        } else if (operation == "OR") {
+            result = op1 | op2;
+        } else if (operation == "NOT") {
+            result = ~op1;
+        }
 
-        // Execute phase
-        if (instruction == 0x00000001) {  // Example: Add registers 0 and 1, store in register 2
-            int result = alu.add(reg.get(0), reg.get(1));
-            reg.set(2, result);
-            std::cout << "Execute: Add R0 + R1 = " << result << ", store in R2" << std::endl;
-        } else if (instruction == 0x00000002) {  // Example: Bitwise NOT on register 1, store in register 3
-            int result = alu.bitwiseNot(reg.get(1));
-            reg.set(3, result);
-            std::cout << "Execute: Bitwise NOT on R1 = " << result << ", store in R3" << std::endl;
+        return bitset<8>(result).to_string();
+    }
+};
+
+// ControlUnit Class
+class ControlUnit {
+private:
+    int programCounter;
+    bool zeroFlag;
+    stack<int> subroutineStack;
+    string currentInstruction;
+
+public:
+    ControlUnit() : programCounter(0), zeroFlag(false) {}
+
+    int getProgramCounter() { return programCounter; }
+    void setProgramCounter(int pc) { programCounter = pc; }
+    bool getZeroFlag() { return zeroFlag; }
+    void setZeroFlag(bool flag) { zeroFlag = flag; }
+    void incrementProgramCounter() { programCounter++; }
+    void setInstruction(const string& instruction) { currentInstruction = instruction; }
+    string getInstruction() const { return currentInstruction; }
+
+    void print() {
+        cout << "PC: " << programCounter << ", ZF: " << zeroFlag << endl;
+    }
+};
+
+// Registers Class
+
+class Registers {
+private:
+    vector<string> registers;
+
+public:
+    Registers(int size) : registers(size, "00000000") {}
+
+    string get(int index) const { return registers[index]; }
+    void set(int index, int value) { registers[index] = bitset<8>(value).to_string(); }
+
+    void print() {
+        for (int i = 0; i < registers.size(); ++i) {
+            cout << "R" << i << "=" << registers[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+// Memory Class
+class Memory {
+private:
+    vector<int> memory;
+
+public:
+    Memory() : memory(256, 0) {}
+
+    void writeData(int address, int data) { memory[address] = data; }
+
+    void printMemory() {
+        cout << "Memory Content (Hexadecimal):" << endl;
+        for (int i = 0; i < memory.size(); ++i) {
+            if (memory[i] != 0) {
+                cout << "[" << i << "]=" << hex << memory[i] << " ";
+            }
+        }
+        cout << endl;
+    }
+};
+
+// IODevices Class
+class IODevices {
+public:
+    void receiveInput(string& input) {
+        cout << "Enter input: ";
+        getline(cin, input);
+    }
+
+    void sendOutput(const string& output) {
+        cout << "Display: Result: " << output << endl;
+    }
+};
+
+// IOInstructions Class
+class IOInstructions {
+public:
+    void handleIN(IODevices& ioDevices, Registers& registers) {
+        string input;
+        ioDevices.receiveInput(input);
+        registers.set(0, stoi(input));
+    }
+
+    void handleOUT(IODevices& ioDevices, Registers& registers) {
+        string output = to_string(stoi(registers.get(0), nullptr, 2));
+        ioDevices.sendOutput(output);
+    }
+};
+
+// Pipeline Class
+class Pipeline {
+public:
+    void fetch(ControlUnit & controlUnit) {
+        // Fetch is simulated by setting instruction in control unit
+    }
+
+    void decode(const string& instruction, string& operation, string& operand1, string& operand2) {
+        regex pattern(R"((ADD|SUB|MUL|DIV|AND|OR|NOT|CALL|RET|JMP|JEQ|JNE|IN|OUT)\((\d+),?(\d*)\))");
+        smatch match;
+        if (regex_match(instruction, match, pattern)) {
+            operation = match[1];
+            operand1 = match[2];
+            operand2 = match[3];
         } else {
-            std::cout << "Execute: No operation for instruction " << instruction << std::endl;
+            cerr << "Invalid instruction format: " << instruction << endl;
         }
-
-        // Update program counter
-        programCounter++;
-        std::cout << std::endl;
-
-        // Print register states
-        reg.print();
     }
-}
 
-// Week 4 Logic: Fetch-Decode-Execute Cycle
-void runWeek4Logic(Memory& memory, ALU& alu, Register& reg, InstructionDecoder& decoder) {
-    int programCounter = 0;
-    int cycleCount = 0;
+    void execute(const string& operation, const string& operand1, const string& operand2, ALU& alu, Registers& registers, ControlUnit& controlUnit, Memory& memory, IOInstructions& ioInstructions, IODevices& ioDevices) {
+        try {
+            int val1 = 0, val2 = 0;
 
-    std::cout << "\nRunning Week 4 Logic...\n";
+            if (operand1[0] == 'R') {
+                val1 = stoi(registers.get(stoi(operand1.substr(1))), nullptr, 2);
+            } else if (isdigit(operand1[0])) {
+                val1 = stoi(operand1);
+                registers.set(1, val1);
+            }
 
-    while (programCounter < 8) {  // Assuming there are 8 instructions
-        // Fetch phase
-        int instruction = memory.fetchInstruction(programCounter);
-        std::cout << "Cycle " << cycleCount++ << " - Fetch: Instruction at PC " << programCounter << " = " << instruction << std::endl;
+            if (operand2[0] == 'R') {
+                val2 = stoi(registers.get(stoi(operand2.substr(1))), nullptr, 2);
+            } else if (!operand2.empty() && isdigit(operand2[0])) {
+                val2 = stoi(operand2);
+                registers.set(2, val2);
+            }
 
-        // Decode phase
-        decoder.decode(instruction);
+            string aluOperation;
+            if (operation == "+" || operation == "ADD") aluOperation = "ADD";
+            else if (operation == "-" || operation == "SUB") aluOperation = "SUB";
+            else if (operation == "*" || operation == "MUL") aluOperation = "MUL";
+            else if (operation == "/" || operation == "DIV") aluOperation = "DIV";
 
-        // Execute phase
-        if (instruction == 0x00000001) {  // Example: Add registers 0 and 1, store in register 2
-            int result = alu.add(reg.get(0), reg.get(1));
-            reg.set(2, result);
-            std::cout << "Execute: Add R0 + R1 = " << result << ", store in R2" << std::endl;
-        } else if (instruction == 0x00000002) {  // Example: Bitwise NOT on register 1, store in register 3
-            int result = alu.bitwiseNot(reg.get(1));
-            reg.set(3, result);
-            std::cout << "Execute: Bitwise NOT on R1 = " << result << ", store in R3" << std::endl;
-        } else {
-            std::cout << "Execute: No operation for instruction " << instruction << std::endl;
+            if (!aluOperation.empty()) {
+                string result = alu.execute(aluOperation, val1, val2);
+                registers.set(0, stoi(result, nullptr, 2));
+                controlUnit.setZeroFlag(result == "00000000");
+            } else if (operation == "CALL") {
+                controlUnit.setProgramCounter(stoi(operand1));
+            } else if (operation == "RET") {
+                controlUnit.incrementProgramCounter();
+            } else if (operation == "JMP") {
+                controlUnit.setProgramCounter(stoi(operand1));
+            } else if (operation == "JEQ" && controlUnit.getZeroFlag()) {
+                controlUnit.setProgramCounter(stoi(operand1));
+            } else if (operation == "JNE" && !controlUnit.getZeroFlag()) {
+                controlUnit.setProgramCounter(stoi(operand1));
+            } else if (operation == "IN") {
+                ioInstructions.handleIN(ioDevices, registers);
+            } else if (operation == "OUT") {
+                ioInstructions.handleOUT(ioDevices, registers);
+            }
+
+            controlUnit.incrementProgramCounter();
+            registers.print();
+            memory.writeData(controlUnit.getProgramCounter(), stoi(registers.get(0), nullptr, 2));
+            memory.printMemory();
+            ioDevices.sendOutput(to_string(stoi(registers.get(0), nullptr, 2)));
+            controlUnit.print();
+        } catch (const exception& e) {
+            cerr << "Error: " << e.what() << " in operation " << operation << " with operands " << operand1 << ", " << operand2 << endl;
         }
-
-        // Update program counter
-        programCounter++;
-        std::cout << std::endl;
-
-        // Print register states
-        reg.print();
     }
-}
 
-// Week 5 Logic: Advanced Fetch-Decode-Execute with Opcode and Operands
-void runWeek5Logic(Memory& memory, ALU& alu, Register& reg, InstructionDecoder& decoder, ControlUnit& controlUnit) {
-    int programCounter = 0;
-    int cycleCount = 0;
+    bool parseInstruction(const string& input, string& operation, string& operand1, string& operand2) {
+        regex pattern1(R"((\d+)\s*([\+\-\*/])\s*(\d+))");
+        regex pattern2(R"((ADD|SUB|MUL|DIV)\((\d+),(\d+)\))");
+        regex pattern3(R"((R\d+)\s*([\+\-\*/])\s*(R\d+))");
+        regex pattern4(R"((ADD|SUB|MUL|DIV)\((R\d+),(R\d+)\))");
+        smatch match;
 
-    std::cout << "\nRunning Week 5 Logic...\n";
-
-    while (programCounter < 8) {  // Assuming there are 8 instructions
-        // Fetch phase
-        int instruction = memory.fetchInstruction(programCounter);
-        std::cout << "Cycle " << cycleCount++ << " - Fetch: Instruction at PC " << programCounter << " = " << instruction << std::endl;
-
-        // Decode phase
-        decoder.decode(instruction);
-
-        // Retrieve opcode and operands
-        int opcode = decoder.getOpcode();
-        int operand1 = decoder.getOperand1();
-        int operand2 = decoder.getOperand2();
-        int destination = decoder.getDestination();
-
-        // Execute phase based on opcode
-        switch (opcode) {
-            case 0x01: {  // Add
-                int result = alu.add(reg.get(operand1), reg.get(operand2));
-                reg.set(destination, result);
-                std::cout << "Execute: Add R" << operand1 << " + R" << operand2 << " = " << result << ", store in R" << destination << std::endl;
-                break;
-            }
-            case 0x02: {  // Subtract
-                int result = alu.subtract(reg.get(operand1), reg.get(operand2));
-                reg.set(destination, result);
-                std::cout << "Execute: Subtract R" << operand2 << " from R" << operand1 << " = " << result << ", store in R" << destination << std::endl;
-                break;
-            }
-            case 0x03: {  // Bitwise NOT
-                int result = alu.bitwiseNot(reg.get(operand1));
-                reg.set(destination, result);
-                std::cout << "Execute: Bitwise NOT R" << operand1 << " = " << result << ", store in R" << destination << std::endl;
-                break;
-            }
-            default:
-                std::cout << "Execute: No operation for opcode " << opcode << std::endl;
-                break;
+        if (regex_match(input, match, pattern1)) {
+            operation = match[2].str();
+            operand1 = match[1].str();
+            operand2 = match[3].str();
+            return true;
+        } else if (regex_match(input, match, pattern2)) {
+            operation = match[1].str();
+            operand1 = match[2].str();
+            operand2 = match[3].str();
+            return true;
+        } else if (regex_match(input, match, pattern3)) {
+            operation = match[2].str();
+            operand1 = match[1].str();
+            operand2 = match[3].str();
+            return true;
+        } else if (regex_match(input, match, pattern4)) {
+            operation = match[1].str();
+            operand1 = match[2].str();
+            operand2 = match[3].str();
+            return true;
         }
-
-        // Update program counter
-        programCounter++;
-        std::cout << std::endl;
-
-        // Print register states
-        reg.print();
+        return false;
     }
-}
+};
 
 int main() {
-    // Memory setup: 4 data memory locations, 8 instruction memory slots
-    Memory memory(4, 8);
-
-    // Initialize memory with example instructions
-    memory.setInstruction(0, 0x01020304);  // Example: Opcode=0x01, operand1=0x02, operand2=0x03, destination=0x04
-    memory.setInstruction(1, 0x02030402);  // Example: Opcode=0x02, operand1=0x03, operand2=0x04, destination=0x02
-    memory.setInstruction(2, 0x03020101);  // Example: Opcode=0x03, operand1=0x02, operand2=0x01, destination=0x01
-    memory.setInstruction(3, 0x00000000);  // No-op
-    memory.setInstruction(4, 0x01010101);  // Add operation
-    memory.setInstruction(5, 0x02020202);  // Subtract operation
-    memory.setInstruction(6, 0x03030303);  // Bitwise NOT operation
-    memory.setInstruction(7, 0x00000000);  // No-op
-
-    // Initialize registers (e.g., 4 registers)
-    Register reg(4);
-
-    // ALU setup
     ALU alu;
-
-    // Control Unit setup
     ControlUnit controlUnit;
+    Memory memory;
+    Pipeline pipeline;
+    IODevices ioDevices;
+    IOInstructions ioInstructions;
+    Registers registers(4);
 
-    // Instruction Decoder setup
-    InstructionDecoder decoder;
 
-    // User selection for Week 3, 4, or 5 logic
-    int choice;
+    while (true) {
+        string input;
+        ioDevices.receiveInput(input);
 
-    // Output prompt
-    std::cout << "Select the mode to run:\n";
-    std::cout << "1. Week 3 Logic (Basic Fetch-Execute)\n";
-    std::cout << "2. Week 4 Logic (Fetch-Decode-Execute)\n";
-    std::cout << "3. Week 5 Logic (Advanced Fetch-Decode-Execute with Opcode)\n";
-    std::cout << "Enter your choice: ";
+        controlUnit.setInstruction(input);
+        pipeline.fetch(controlUnit);
 
-    // Input choice from user
-    std::cin >> choice;
+        string operation, operand1, operand2;
+        if (!pipeline.parseInstruction(input, operation, operand1, operand2)) {
+            pipeline.decode(controlUnit.getInstruction(), operation, operand1, operand2);
+        }
 
-    // Check if input failed
-    if (std::cin.fail()) {
-        std::cout << "Invalid input detected! Exiting program.\n";
-        return -1;
+         pipeline.execute(operation, operand1, operand2, alu, registers, controlUnit, memory, ioInstructions, ioDevices);
+
+        if (operation == "RET") {
+            break;
+        }
     }
-
-    // Handle the user's choice
-    if (choice == 1) {
-        runWeek3Logic(memory, alu, reg);
-    } else if (choice == 2) {
-        runWeek4Logic(memory, alu, reg, decoder);
-    } else if (choice == 3) {
-        runWeek5Logic(memory, alu, reg, decoder, controlUnit);
-    } else {
-        std::cout << "Invalid choice. Exiting program.\n";
-    }
-
     return 0;
 }
